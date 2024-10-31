@@ -7,36 +7,37 @@ const selection = new Image();
 const numberOfRows = 25;
 const numberOfColumns = 25;
 
-const hexagonSize = 32;
-const hexagonBorderWidth = 3;
-const hexagonWidth = hexagonSize * Math.sqrt(3);
-const hexagonHeight = hexagonSize * 2;
-const horizontalOffset = hexagonWidth;
-const verticalOffset = (3 / 4) * hexagonHeight;
+class Hexagon {
+  constructor(hexagonSize = 32, hexagonBorderWidth = 0) {
+    this.size = hexagonSize;
+    this.borderWidth = hexagonBorderWidth;
+    this.width = hexagonSize * Math.sqrt(3);
+    this.height = hexagonSize * 2;
+    this.horizontalOffset = this.width;
+    this.verticalOffset = (3 / 4) * this.height;
+  }
 
-function drawHexagon(ctx, x, y, hexagonSize, hexagonBoarderWidth, color) {
-  const height = 2 * hexagonSize;
-  const width = Math.sqrt(3) * hexagonSize;
-  ctx.beginPath();
-  ctx.fillStyle = '#c09250';
-  ctx.moveTo(x + (0.5 * width), y + 0);
-  ctx.lineTo(x + width, y + (0.25 * height));
-  ctx.lineTo(x + width, y + (0.75 * height));
-  ctx.lineTo(x + (0.5 * width), y + height);
-  ctx.lineTo(x + 0, y + (0.75 * height));
-  ctx.lineTo(x + 0, y + (0.25 * height));
-  ctx.fill();
+  size;
+  borderWidth;
+  width;
+  height;
+  horizontalOffset;
+  verticalOffset;
 
-  ctx.beginPath();
-  ctx.fillStyle = color;
-  ctx.moveTo(x + (0.5 * width), y + 0 + hexagonBoarderWidth);
-  ctx.lineTo(x + width - hexagonBoarderWidth, y + (0.25 * height));
-  ctx.lineTo(x + width - hexagonBoarderWidth, y + (0.75 * height));
-  ctx.lineTo(x + (0.5 * width), y + height - hexagonBoarderWidth);
-  ctx.lineTo(x + 0 + hexagonBoarderWidth, y + (0.75 * height));
-  ctx.lineTo(x + 0 + hexagonBoarderWidth, y + (0.25 * height));
-  ctx.fill();
+  draw(ctx, x, y, color) {
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.moveTo(x + (0.5 * this.width), y + 0 + this.borderWidth);
+    ctx.lineTo(x + this.width - this.borderWidth, y + (0.25 * this.height));
+    ctx.lineTo(x + this.width - this.borderWidth, y + (0.75 * this.height));
+    ctx.lineTo(x + (0.5 * this.width), y + this.height - this.borderWidth);
+    ctx.lineTo(x + 0 + this.borderWidth, y + (0.75 * this.height));
+    ctx.lineTo(x + 0 + this.borderWidth, y + (0.25 * this.height));
+    ctx.fill();
+  }
 }
+
+const hexagon = new Hexagon(32, 1);
 
 overlayCanvas.addEventListener("mousedown", (event) => {
   overlayCanvasCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
@@ -48,17 +49,15 @@ overlayCanvas.addEventListener("mousedown", (event) => {
 
   for (let row = 0; row < numberOfRows; row++) {
     for (let col = 0; col < numberOfColumns; col++) {
-      const x = col * horizontalOffset + (row % 2 === 0 ? 0 : hexagonWidth / 2);
-      const y = row * verticalOffset;
+      const x = col * hexagon.horizontalOffset + (row % 2 === 0 ? 0 : hexagon.width / 2);
+      const y = row * hexagon.verticalOffset;
 
       // distance = Math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
-      mainCanvasCtx.fillRect(x + (hexagonWidth / 2), y + (hexagonHeight / 2), 1, 1)
-
-      const dx = clickX - (x + (hexagonWidth / 2));
-      const dy = clickY - (y + (hexagonHeight / 2));
+      const dx = clickX - (x + (hexagon.width / 2));
+      const dy = clickY - (y + (hexagon.height / 2));
       const distance = Math.sqrt(dx * dx + dy * dy);
       
-      if (distance < minDistance) {
+      if (distance < minDistance && distance <= hexagon.size) {
         minDistance = distance;
         closestHex = {x: x, y: y};
       }
@@ -72,9 +71,9 @@ overlayCanvas.addEventListener("mousedown", (event) => {
 
 for (let row = 0; row < numberOfRows; row++) {
   for (let col = 0; col < numberOfColumns; col++) {
-    const x = col * horizontalOffset + (row % 2 === 0 ? 0 : hexagonWidth / 2);
-    const y = row * verticalOffset;
-    drawHexagon(mainCanvasCtx, x, y, hexagonSize, hexagonBorderWidth, '#f6c567')
+    const x = col * hexagon.horizontalOffset + (row % 2 === 0 ? 0 : hexagon.width / 2);
+    const y = row * hexagon.verticalOffset;
+    hexagon.draw(mainCanvasCtx, x, y, '#f6c567')
   }
 }
 
